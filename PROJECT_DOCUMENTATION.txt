@@ -1,0 +1,361 @@
+
+# OBEYYO E-COMMERCE PROJECT DOCUMENTATION
+
+## PROJECT OVERVIEW
+Obeyyo is a modern e-commerce platform built with React, TypeScript, and Tailwind CSS. It features a mobile-first design with comprehensive shopping functionality including product browsing, cart management, payment processing, and user authentication.
+
+## FOLDER STRUCTURE BREAKDOWN
+
+### ROOT DIRECTORY
+- `package.json` - Project dependencies and scripts configuration
+- `tailwind.config.ts` - Tailwind CSS configuration with custom design tokens
+- `vite.config.ts` - Vite build tool configuration
+- `tsconfig.json` - TypeScript compiler configuration
+- `README.md` - Project setup and deployment instructions
+
+### SRC DIRECTORY STRUCTURE
+
+#### `/src/pages/` - Main Application Pages
+This directory contains all the main page components that represent different routes in the application.
+
+1. **Index.tsx** (Main Homepage)
+   - Primary landing page of the application
+   - Contains hero carousel, flash sales, trending products, and promotional banners
+   - Imports and orchestrates multiple home section components
+   - Handles loading states and user experience flow
+
+2. **Cart.tsx** 
+   - Shopping cart management page
+   - Displays cart items with quantity controls
+   - Shows pricing calculations and totals
+   - Provides checkout functionality
+   - Integrates with localStorage for cart persistence
+
+3. **Payment.tsx**
+   - Payment processing page
+   - Shows order summary and payment options
+   - Includes bank offers and payment method selection
+   - Features expandable payment option details
+   - Handles payment gateway integration setup
+
+4. **PaymentSuccess.tsx**
+   - Post-payment confirmation page
+   - Displays order confirmation details
+   - Clears cart after successful payment
+   - Provides navigation back to shopping
+
+5. **Men.tsx, Women.tsx, Kids.tsx, Accessories.tsx**
+   - Category-specific product listing pages
+   - Filter and sort functionality
+   - Product grid displays
+   - Category-specific promotions
+
+6. **ProductDetail.tsx**
+   - Individual product information page
+   - Product images, descriptions, and specifications
+   - Add to cart and wishlist functionality
+   - Customer reviews and ratings
+
+7. **Login.tsx, Profile.tsx**
+   - User authentication and account management
+   - Login/signup forms
+   - User profile information and settings
+
+8. **Wishlist.tsx**
+   - User's saved products page
+   - Wishlist management functionality
+   - Move to cart options
+
+9. **Categories.tsx**
+   - All categories overview page
+   - Category navigation and browsing
+
+10. **BrandPage.tsx**
+    - Brand-specific product listings
+    - Brand information and promotions
+
+11. **Admin.tsx**
+    - Admin dashboard for platform management
+    - Product, user, and order management
+
+12. **NotFound.tsx**
+    - 404 error page for invalid routes
+
+#### `/src/components/` - Reusable UI Components
+
+##### `/src/components/ui/` - Base UI Components (Shadcn/UI)
+Pre-built, accessible UI components from the Shadcn/UI library:
+- `button.tsx` - Customizable button component with variants
+- `input.tsx` - Form input component with validation support
+- `card.tsx` - Container component for content sections
+- `badge.tsx` - Small status/label indicators
+- `dialog.tsx` - Modal and popup components
+- `toast.tsx` - Notification system components
+- `accordion.tsx` - Collapsible content sections
+- `carousel.tsx` - Image and content sliders
+- `tabs.tsx` - Tabbed navigation interface
+- And many more foundational UI components
+
+##### `/src/components/home/` - Homepage Section Components
+Modular components for the homepage, created during refactoring:
+
+1. **HeroSection.tsx**
+   - Personalized greeting and hero carousel
+   - Manages hero image display and loading states
+   - Props: carouselImages array, isLoading boolean
+
+2. **QuickActions.tsx**
+   - Quick navigation buttons with background images
+   - Flash Sale, New Arrivals, Top Brands, Budget Picks
+   - Each action has icon, label, link, and background styling
+
+3. **FlashSaleSection.tsx**
+   - Time-limited product sales with countdown timer
+   - 2x2 product grid display (max 4 products)
+   - Real-time countdown functionality
+   - View All button for complete product list
+
+4. **CategoryFlashSaleSection.tsx**
+   - Category-specific flash sales with tabs
+   - Switchable categories: Men's, Women's, Sports, Accessories
+   - 2x2 product grid per category
+   - Individual countdown timer per section
+
+5. **TrendingSection.tsx**
+   - Trending products horizontal slider
+   - Product popularity indicators
+   - Smooth horizontal scrolling
+
+6. **NewArrivalsSection.tsx**
+   - Latest product additions
+   - Horizontal product slider
+   - New product badges and indicators
+
+7. **RecommendedSection.tsx**
+   - Personalized product recommendations
+   - Algorithm-based product suggestions
+   - Horizontal scrolling product display
+
+8. **ShopByBrandsSection.tsx**
+   - Featured brand showcase
+   - Brand logos with discount information
+   - Navigation to brand-specific pages
+
+9. **BankOffersSection.tsx**
+   - Banking partnership promotions
+   - Credit/debit card specific offers
+   - Promo codes and discount details
+
+10. **TopPicksSection.tsx**
+    - Editor's choice and top-rated products
+    - Premium product showcase
+    - High-quality product recommendations
+
+##### Core Application Components
+
+1. **Layout.tsx**
+   - Main application wrapper and navigation
+   - Mobile-first responsive design
+   - Bottom navigation bar with cart/wishlist badges
+   - Header with search, logo, and menu
+   - Sidebar integration and mobile menu
+   - localStorage integration for cart/wishlist counts
+
+2. **Sidebar.tsx**
+   - Slide-out navigation menu
+   - Category navigation and user account links
+   - Promotional banners and app downloads
+   - Logo display and brand information
+
+3. **ProductCard.tsx**
+   - Individual product display component
+   - Product images, pricing, ratings
+   - Add to cart and wishlist functionality
+   - Multiple display variants (grid, list, slider)
+
+4. **ProductSlider.tsx**
+   - Horizontal scrolling product container
+   - Navigation arrows and smooth scrolling
+   - Responsive design for different screen sizes
+   - Used across multiple homepage sections
+
+5. **ImageCarousel.tsx**
+   - Hero image slideshow component
+   - Automatic and manual navigation
+   - Touch/swipe support for mobile
+   - Smooth transitions and animations
+
+6. **FeaturedBrands.tsx**
+   - Brand showcase component
+   - Logo display with discount information
+   - Horizontal scrolling brand list
+
+7. **PromoBanner.tsx**
+   - Promotional content display
+   - Background images with overlay text
+   - Call-to-action buttons
+   - Customizable styling and content
+
+8. **SkeletonLoader.tsx**
+   - Loading state placeholders
+   - Multiple variants: product, banner, brand
+   - Smooth loading experience
+   - Maintains layout during data fetching
+
+9. **Footer.tsx**
+   - Site footer with links and information
+   - Company information and policies
+   - Social media links and contact details
+
+#### `/src/components/admin/` - Admin Panel Components
+Administrative interface components for platform management:
+- **AdminDashboard.tsx** - Main admin overview and statistics
+- **ProductManagement.tsx** - Add, edit, delete products
+- **CategoryManagement.tsx** - Category organization
+- **BrandManagement.tsx** - Brand information management
+- **AdminUserManagement.tsx** - User account administration
+- **BannerManagement.tsx** - Homepage banner management
+
+#### `/src/hooks/` - Custom React Hooks
+- **use-toast.ts** - Toast notification system hook
+- **use-mobile.tsx** - Mobile device detection hook
+
+#### `/src/lib/` - Utility Functions
+- **utils.ts** - Common utility functions and helpers
+- Class name merging, formatting functions, validation helpers
+
+#### `/src/integrations/` - External Service Integrations
+- **supabase/** - Database and backend integration
+  - `client.ts` - Supabase client configuration
+  - `types.ts` - Database type definitions
+
+### STYLING AND DESIGN SYSTEM
+
+#### `/src/index.css`
+- Global CSS styles and design tokens
+- Custom color palette definition
+- Typography and spacing systems
+- Animation keyframes and transitions
+- Responsive breakpoint utilities
+
+#### `tailwind.config.ts`
+- Tailwind CSS customization
+- Custom color scheme (obeyyo-pink, obeyyo-blue, etc.)
+- Font family definitions
+- Animation configurations
+- Component-specific styling utilities
+
+### APPLICATION FEATURES AND FUNCTIONALITY
+
+#### E-commerce Core Features
+1. **Product Browsing**
+   - Category-based navigation
+   - Search functionality
+   - Product filtering and sorting
+   - Detailed product pages
+
+2. **Shopping Cart**
+   - Add/remove products
+   - Quantity management
+   - Price calculations
+   - Persistent storage (localStorage)
+
+3. **Wishlist System**
+   - Save favorite products
+   - Easy cart transfer
+   - Persistent storage
+
+4. **Payment Processing**
+   - Multiple payment options
+   - Bank offer integration
+   - Order summary display
+   - Payment gateway ready (Razorpay/Stripe)
+
+5. **User Authentication**
+   - Login/signup functionality
+   - User profile management
+   - Order history tracking
+
+#### Marketing and Promotional Features
+1. **Flash Sales**
+   - Time-limited offers
+   - Countdown timers
+   - Category-specific sales
+
+2. **Brand Partnerships**
+   - Featured brand sections
+   - Brand-specific promotions
+   - Brand page navigation
+
+3. **Banking Offers**
+   - Credit/debit card promotions
+   - Promo code integration
+   - Partnership deals
+
+4. **Recommendation Engine**
+   - Trending products
+   - Personalized recommendations
+   - New arrival highlights
+
+#### Technical Features
+1. **Responsive Design**
+   - Mobile-first approach
+   - Touch-friendly interfaces
+   - Optimized for all screen sizes
+
+2. **Performance Optimization**
+   - Lazy loading components
+   - Skeleton loading states
+   - Efficient state management
+
+3. **User Experience**
+   - Smooth animations
+   - Intuitive navigation
+   - Fast loading times
+   - Offline capabilities (localStorage)
+
+### DEVELOPMENT WORKFLOW
+
+#### Build Tools and Configuration
+- **Vite** - Fast development server and build tool
+- **TypeScript** - Type-safe development
+- **React** - Component-based UI framework
+- **Tailwind CSS** - Utility-first styling
+
+#### Code Organization Principles
+1. **Component Modularity** - Small, focused components
+2. **Separation of Concerns** - Clear responsibility boundaries
+3. **Reusability** - Shared components and utilities
+4. **Type Safety** - Comprehensive TypeScript usage
+5. **Performance** - Optimized loading and rendering
+
+#### State Management
+- **React Hooks** - Local component state
+- **localStorage** - Persistent client-side storage
+- **Context API** - Global state when needed
+- **TanStack Query** - Server state management
+
+### DEPLOYMENT AND INFRASTRUCTURE
+
+#### Hosting and Deployment
+- **Lovable Platform** - Integrated hosting solution
+- **Domain Configuration** - Custom domain support
+- **SSL Certificate** - Secure HTTPS connections
+
+#### External Integrations
+- **Supabase** - Backend database and authentication
+- **Payment Gateways** - Razorpay/Stripe integration ready
+- **Image CDN** - Unsplash for product images
+- **Analytics** - Performance monitoring capabilities
+
+### FUTURE ENHANCEMENT OPPORTUNITIES
+
+1. **Advanced Search** - AI-powered product discovery
+2. **Social Features** - User reviews and social sharing
+3. **Inventory Management** - Real-time stock tracking
+4. **Analytics Dashboard** - Business intelligence tools
+5. **Mobile App** - React Native implementation
+6. **Internationalization** - Multi-language support
+7. **Advanced Recommendations** - Machine learning integration
+
+This documentation provides a comprehensive overview of the Obeyyo e-commerce platform architecture, helping developers understand the codebase structure, component relationships, and system functionality.

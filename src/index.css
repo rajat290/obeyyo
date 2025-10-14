@@ -1,0 +1,351 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+    --radius: 0.5rem;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 10.6% 64.9%;
+    
+    /* Obeyyo Brand Colors */
+    --obeyyo-pink: #fc2682;
+    --obeyyo-red: #fc334d;
+    --obeyyo-orange: #fb8619;
+    --obeyyo-yellow: #f9b704;
+    --obeyyo-blue: #08a0ef;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 94.1%;
+    --sidebar-primary-foreground: 240 5.9% 10%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 10.6% 64.9%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Poppins', sans-serif;
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .gradient-text {
+    background: linear-gradient(135deg, var(--obeyyo-pink) 0%, var(--obeyyo-blue) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .bg-gradient-obeyyo {
+    background: linear-gradient(135deg, var(--obeyyo-pink) 0%, var(--obeyyo-orange) 100%);
+  }
+  
+  .bg-gradient-obeyyo-flash {
+    background: linear-gradient(135deg, var(--obeyyo-red) 0%, var(--obeyyo-pink) 100%);
+  }
+  
+  .text-obeyyo-pink {
+    color: var(--obeyyo-pink);
+  }
+  
+  .text-obeyyo-red {
+    color: var(--obeyyo-red);
+  }
+  
+  .text-obeyyo-orange {
+    color: var(--obeyyo-orange);
+  }
+  
+  .text-obeyyo-yellow {
+    color: var(--obeyyo-yellow);
+  }
+  
+  .text-obeyyo-blue {
+    color: var(--obeyyo-blue);
+  }
+  
+  .bg-obeyyo-pink {
+    background-color: var(--obeyyo-pink);
+  }
+  
+  .bg-obeyyo-red {
+    background-color: var(--obeyyo-red);
+  }
+  
+  .bg-obeyyo-orange {
+    background-color: var(--obeyyo-orange);
+  }
+  
+  .bg-obeyyo-yellow {
+    background-color: var(--obeyyo-yellow);
+  }
+  
+  .bg-obeyyo-blue {
+    background-color: var(--obeyyo-blue);
+  }
+  
+  .border-obeyyo-pink {
+    border-color: var(--obeyyo-pink);
+  }
+  
+  .border-obeyyo-red {
+    border-color: var(--obeyyo-red);
+  }
+  
+  .border-obeyyo-orange {
+    border-color: var(--obeyyo-orange);
+  }
+  
+  .border-obeyyo-yellow {
+    border-color: var(--obeyyo-yellow);
+  }
+  
+  .border-obeyyo-blue {
+    border-color: var(--obeyyo-blue);
+  }
+
+  /* Brand color utilities */
+  .text-obeyyo-red { color: #fc334d !important; }
+  .text-obeyyo-orange { color: #fb8619 !important; }
+  .text-obeyyo-yellow { color: #f9b704 !important; }
+  .text-obeyyo-blue { color: #08a0ef !important; }
+
+  .bg-obeyyo-red { background-color: #fc334d !important; }
+  .bg-obeyyo-orange { background-color: #fb8619 !important; }
+  .bg-obeyyo-yellow { background-color: #f9b704 !important; }
+  .bg-obeyyo-blue { background-color: #08a0ef !important; }
+
+  .border-obeyyo-red { border-color: #fc334d !important; }
+  .border-obeyyo-orange { border-color: #fb8619 !important; }
+  .border-obeyyo-yellow { border-color: #f9b704 !important; }
+  .border-obeyyo-blue { border-color: #08a0ef !important; }
+
+  /* Example brand gradient class */
+  .bg-gradient-obeyyo {
+      background: linear-gradient(90deg, #fc334d 0%, #fb8619 33%, #f9b704 66%, #08a0ef 100%);
+  }
+  .gradient-text-obeyyo {
+      background: linear-gradient(90deg, #fc334d 0%, #fb8619 33%, #f9b704 66%, #08a0ef 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-weight: bold;
+  }
+
+  /* Enhanced Animations */
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-out forwards;
+  }
+
+  .animate-slide-in-right {
+    animation: slideInRight 0.3s ease-out forwards;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.2s ease-out forwards;
+  }
+
+  .animate-bounce-gentle {
+    animation: bounceGentle 1s ease-in-out infinite;
+  }
+
+  .animate-pulse-gentle {
+    animation: pulseGentle 2s ease-in-out infinite;
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .animate-shimmer {
+    animation: shimmer 2s linear infinite;
+  }
+
+  /* Touch-friendly hover states */
+  @media (hover: hover) {
+    .hover-lift:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+  }
+
+  /* Touch states for mobile */
+  .touch-feedback:active {
+    transform: scale(0.98);
+    transition: transform 0.1s ease;
+  }
+
+  /* Smooth scrolling for better UX */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Custom scrollbar for webkit browsers */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, var(--obeyyo-pink), var(--obeyyo-blue));
+    border-radius: 10px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, var(--obeyyo-red), var(--obeyyo-pink));
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes bounceGentle {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-3px);
+  }
+  60% {
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes pulseGentle {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+}
+
+/* Loading skeleton animation */
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200px 100%;
+  animation: shimmer 2s infinite;
+}
