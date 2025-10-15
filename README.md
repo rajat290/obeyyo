@@ -302,3 +302,333 @@ For support, email support@obeyyo.com or join our Discord community.
 
 [![GitHub stars](https://img.shields.io/github/stars/yourusername/obeyyo.svg?style=social&label=Star)](https://github.com/yourusername/obeyyo)
 [![GitHub forks](https://img.shields.io/github/forks/yourusername/obeyyo.svg?style=social&label=Fork)](https://github.com/yourusername/obeyyo)
+
+
+
+
+
+
+# Frontend & Backend Integration Guide - Obeyyo E-Commerce Platform
+
+## Table of Contents
+1. [API Endpoints with Postman Testing Syntax](#api-endpoints-with-postman-testing-syntax)
+2. [Frontend File-wise API Integration](#frontend-file-wise-api-integration)
+3. [Backend File Responsibility Mapping](#backend-file-responsibility-mapping)
+
+---
+
+## API Endpoints with Postman Testing Syntax
+
+### Base URL
+```
+http://localhost:5000/api
+```
+
+### Authentication Headers
+For authenticated requests, include:
+```
+Authorization: Bearer <your_jwt_token>
+Content-Type: application/json
+```
+
+---
+
+### 1. Authentication & User Management
+
+#### 1.1 Register User
+**Method:** POST
+**Endpoint:** `/auth/register`
+**Backend File:** `backend/src/controllers/authController.js`
+**Request Body:**
+```json
+{
+  "email": "user@example.com",
+  "password": "password123",
+  "firstName": "John",
+  "lastName": "Doe",
+  "phone": "+91-9876543210"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "user": {
+      "id": "user_id",
+      "email": "user@example.com",
+      "firstName": "John",
+      "lastName": "Doe"
+    },
+    "token": "jwt_token_here"
+  }
+}
+```
+
+#### 1.2 Login User
+**Method:** POST
+**Endpoint:** `/auth/login`
+**Backend File:** `backend/src/controllers/authController.js`
+**Request Body:**
+```json
+{
+  "email": "user@example.com",
+  "password": "password123"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "user": {
+      "id": "user_id",
+      "email": "user@example.com",
+      "firstName": "John",
+      "lastName": "Doe"
+    },
+    "token": "jwt_token_here"
+  }
+}
+```
+
+#### 1.3 Get User Profile
+**Method:** GET
+**Endpoint:** `/users/profile`
+**Backend File:** `backend/src/controllers/userController.js`
+**Headers:** Authorization required
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "user": {
+      "id": "user_id",
+      "email": "user@example.com",
+      "firstName": "John",
+      "lastName": "Doe",
+      "phone": "+91-9876543210",
+      "avatar": "image_url"
+    }
+  }
+}
+```
+
+#### 1.4 Update User Profile
+**Method:** PUT
+**Endpoint:** `/users/profile`
+**Backend File:** `backend/src/controllers/userController.js`
+**Headers:** Authorization required
+**Request Body:**
+```json
+{
+  "firstName": "John Updated",
+  "lastName": "Doe Updated",
+  "phone": "+91-9876543210"
+}
+```
+
+#### 1.5 Get User Addresses
+**Method:** GET
+**Endpoint:** `/users/addresses`
+**Backend File:** `backend/src/controllers/userController.js`
+**Headers:** Authorization required
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "addresses": [
+      {
+        "id": "address_id",
+        "type": "home",
+        "fullName": "John Doe",
+        "phone": "+91-9876543210",
+        "addressLine1": "123 Main St",
+        "city": "Mumbai",
+        "state": "Maharashtra",
+        "pincode": "400001",
+        "isDefault": true
+      }
+    ]
+  }
+}
+```
+
+#### 1.6 Add User Address
+**Method:** POST
+**Endpoint:** `/users/addresses`
+**Backend File:** `backend/src/controllers/userController.js`
+**Headers:** Authorization required
+**Request Body:**
+```json
+{
+  "type": "home",
+  "fullName": "John Doe",
+  "phone": "+91-9876543210",
+  "addressLine1": "123 Main St",
+  "addressLine2": "Near Park",
+  "city": "Mumbai",
+  "state": "Maharashtra",
+  "pincode": "400001",
+  "country": "India",
+  "isDefault": true
+}
+```
+
+---
+
+### 2. Product Management
+
+#### 2.1 Get All Products
+**Method:** GET
+**Endpoint:** `/products`
+**Backend File:** `backend/src/controllers/productController.js`
+**Query Parameters:**
+- `page=1` (pagination)
+- `limit=20` (items per page)
+- `category=men` (filter by category)
+- `brand=nike` (filter by brand)
+- `minPrice=1000` (price filter)
+- `maxPrice=5000` (price filter)
+- `search=shirt` (search query)
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "products": [
+      {
+        "id": "product_id",
+        "name": "Cotton T-Shirt",
+        "price": 1299,
+        "originalPrice": 1599,
+        "rating": 4.5,
+        "reviews": 25,
+        "image": "image_url",
+        "brand": "Nike",
+        "category": "men",
+        "isNew": true,
+        "isTrending": false
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "limit": 20,
+      "total": 100,
+      "pages": 5
+    }
+  }
+}
+```
+
+#### 2.2 Get Product by Slug
+**Method:** GET
+**Endpoint:** `/products/cotton-t-shirt`
+**Backend File:** `backend/src/controllers/productController.js`
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "product": {
+      "id": "product_id",
+      "name": "Cotton T-Shirt",
+      "description": "Comfortable cotton t-shirt",
+      "price": 1299,
+      "images": ["image1.jpg", "image2.jpg"],
+      "category": "men",
+      "brand": "Nike",
+      "rating": 4.5,
+      "reviews": 25,
+      "sizes": ["S", "M", "L", "XL"],
+      "colors": ["White", "Black", "Blue"]
+    }
+  }
+}
+```
+
+#### 2.3 Get Featured Products
+**Method:** GET
+**Endpoint:** `/products/featured`
+**Backend File:** `backend/src/controllers/productController.js`
+**Query Parameters:** `limit=10`
+**Response:** Same as Get All Products
+
+#### 2.4 Get Trending Products
+**Method:** GET
+**Endpoint:** `/products/trending`
+**Backend File:** `backend/src/controllers/productController.js`
+**Query Parameters:** `limit=10`
+
+#### 2.5 Get New Arrivals
+**Method:** GET
+**Endpoint:** `/products/new-arrivals`
+**Backend File:** `backend/src/controllers/productController.js`
+**Query Parameters:** `limit=10`
+
+#### 2.6 Get Related Products
+**Method:** GET
+**Endpoint:** `/products/related/product_id`
+**Backend File:** `backend/src/controllers/productController.js`
+**Query Parameters:** `limit=6`
+
+#### 2.7 Get Product Reviews
+**Method:** GET
+**Endpoint:** `/reviews/product/product_id`
+**Backend File:** `backend/src/controllers/reviewController.js`
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "reviews": [
+      {
+        "id": "review_id",
+        "user": "John Doe",
+        "rating": 5,
+        "title": "Great product",
+        "comment": "Very comfortable and good quality",
+        "createdAt": "2024-01-15T10:30:00Z"
+      }
+    ],
+    "averageRating": 4.5,
+    "totalReviews": 25
+  }
+}
+```
+
+#### 2.8 Submit Product Review
+**Method:** POST
+**Endpoint:** `/reviews`
+**Backend File:** `backend/src/controllers/reviewController.js`
+**Headers:** Authorization required
+**Request Body:**
+```json
+{
+  "productId": "product_id",
+  "rating": 5,
+  "title": "Great product",
+  "comment": "Very comfortable and good quality"
+}
+```
+
+---
+
+### 3. Categories & Brands
+
+#### 3.1 Get All Categories
+**Method:** GET
+**Endpoint:** `/categories`
+**Backend File:** `backend/src/controllers/categoryController.js`
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "categories": [
+      {
+        "id": "category_id",
+        "name": "Men",
+        "slug": "men",
+        "image": "category_image.jpg"
