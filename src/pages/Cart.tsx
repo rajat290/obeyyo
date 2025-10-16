@@ -1,325 +1,328 @@
+import React, { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useCart } from '../hooks/userCart';
+import { useAuth } from '../hooks/useAuth';
+import { formatPrice } from '../utils/helpers';
 
-import { useState, useEffect } from "react";
-import Layout from "@/components/Layout";
-import { Minus, Plus, Trash2, ShoppingBag, MapPin, Edit3, Gift, Share, Tag } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Link, useNavigate } from "react-router-dom";
-import { Badge } from "@/components/ui/badge";
-
-interface CartItem {
-  id: string;
-  name: string;
-  price: number;
-  originalPrice?: number;
-  image: string;
-  brand: string;
-  quantity: number;
-  size?: string;
-  color?: string;
-}
-
-const Cart = () => {
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+const Cart: React.FC = () => {
+  const { cart, loading, error, updateQuantity, removeFromCart, clearCart, getCart } = useCart();
+  const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const [couponCode, setCouponCode] = useState<string>('');
+  const [appliedCoupon, setAppliedCoupon] = useState<string>('');
+  const [discount, setDiscount] = useState<number>(0);
 
   useEffect(() => {
-    window.scrollTo(0, 0);
-    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-    // Add mock data for better demonstration
-    const mockCartItems = cart.length > 0 ? cart : [
-      {
-        id: "1",
-        name: "Men Oversized Cargos Trousers",
-        price: 1149,
-        originalPrice: 2299,
-        image: "https://images.unsplash.com/photo-1473691955023-da1c49c95c78?w=200",
-        brand: "WROGN",
-        quantity: 1,
-        size: "32",
-        color: "Olive Green"
-      }
-    ];
-    setCartItems(mockCartItems);
-    setSelectedItems(mockCartItems.map(item => item.id));
-  }, []);
+    if (isAuthenticated) {
+      getCart();
+    }
+  }, [isAuthenticated]);
 
-  const updateQuantity = (id: string, newQuantity: number) => {
-    if (newQuantity <= 0) {
-      removeItem(id);
+  const handleQuantityChange = async (itemId: string, newQuantity: number): Promise<void> => {
+    try {
+      await updateQuantity(itemId, newQuantity);
+    } catch (err) {
+      console.error('Failed to update quantity:', err);
+    }
+  };
+
+  const handleRemoveItem = async (itemId: string): Promise<void> => {
+    if (window.confirm('Are you sure you want to remove this item from your cart?')) {
+      try {
+        await removeFromCart(itemId);
+      } catch (err) {
+        console.error('Failed to remove item:', err);
+      }
+    }
+  };
+
+  const handleApplyCoupon = (): void => {
+    // TODO: Implement coupon validation
+    if (couponCode.trim()) {
+      setAppliedCoupon(couponCode);
+      setDiscount(100); // Example discount
+      setCouponCode('');
+    }
+  };
+
+  const handleClearCart = async (): Promise<void> => {
+    if (window.confirm('Are you sure you want to clear your entire cart?')) {
+      try {
+        await clearCart();
+      } catch (err) {
+        console.error('Failed to clear cart:', err);
+      }
+    }
+  };
+
+  const handleCheckout = (): void => {
+    if (!isAuthenticated) {
+      navigate('/login', { state: { from: '/cart' } });
       return;
     }
-    
-    const updatedCart = cartItems.map(item => 
-      item.id === id ? { ...item, quantity: newQuantity } : item
-    );
-    setCartItems(updatedCart);
-    localStorage.setItem('cart', JSON.stringify(updatedCart));
-    window.dispatchEvent(new CustomEvent('cartUpdated'));
+    navigate('/checkout');
   };
 
-  const removeItem = (id: string) => {
-    const updatedCart = cartItems.filter(item => item.id !== id);
-    setCartItems(updatedCart);
-    localStorage.setItem('cart', JSON.stringify(updatedCart));
-    window.dispatchEvent(new CustomEvent('cartUpdated'));
-    setSelectedItems(prev => prev.filter(itemId => itemId !== id));
-  };
-
-  const toggleItemSelection = (id: string) => {
-    setSelectedItems(prev => 
-      prev.includes(id) 
-        ? prev.filter(itemId => itemId !== id)
-        : [...prev, id]
-    );
-  };
-
-  const getSelectedItems = () => {
-    return cartItems.filter(item => selectedItems.includes(item.id));
-  };
-
-  const getTotalPrice = () => {
-    return getSelectedItems().reduce((total, item) => total + (item.price * item.quantity), 0);
-  };
-
-  const getTotalSavings = () => {
-    return getSelectedItems().reduce((total, item) => {
-      if (item.originalPrice) {
-        return total + ((item.originalPrice - item.price) * item.quantity);
-      }
-      return total;
-    }, 0);
-  };
-
-  const handleProceedToCheckout = () => {
-    const total = getTotalPrice();
-    const selectedCartItems = getSelectedItems();
-    navigate('/payment', { state: { total, cartItems: selectedCartItems } });
-  };
-
-  if (cartItems.length === 0) {
+  if (!isAuthenticated) {
     return (
-      <Layout>
-        <div className="flex flex-col items-center justify-center min-h-[60vh] px-4">
-          <ShoppingBag className="w-24 h-24 text-gray-300 mb-4" />
-          <h2 className="text-xl font-bold text-gray-800 mb-2">Your cart is empty</h2>
-          <p className="text-gray-600 text-center mb-6">Add some products to get started!</p>
-          <Link to="/">
-            <Button className="bg-gradient-to-r from-obeyyo-pink to-obeyyo-blue text-white">
-              Continue Shopping
-            </Button>
-          </Link>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="max-w-md w-full bg-white rounded-lg shadow-md p-6 text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Sign In Required</h2>
+          <p className="text-gray-600 mb-6">Please sign in to view your cart.</p>
+          <button
+            onClick={() => navigate('/login', { state: { from: '/cart' } })}
+            className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700"
+          >
+            Sign In
+          </button>
         </div>
-      </Layout>
+      </div>
     );
   }
 
-  return (
-    <Layout>
-      <div className="bg-gray-50 min-h-screen">
-        {/* Header */}
-        <div className="bg-white px-4 py-4 shadow-sm">
-          <div className="flex items-center justify-between">
-            <h1 className="text-lg font-bold text-gray-800">SHOPPING BAG</h1>
-            <Button variant="ghost" size="sm" className="p-2">
-              <Share className="w-5 h-5 text-gray-600" />
-            </Button>
-          </div>
-          
-          {/* Progress Bar */}
-          <div className="flex items-center mt-4 space-x-4">
-            <div className="flex items-center">
-              <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                <div className="w-2 h-2 bg-white rounded-full"></div>
-              </div>
-              <span className="ml-2 text-sm font-medium text-green-600">Bag</span>
-            </div>
-            <div className="flex-1 h-px bg-gray-300"></div>
-            <div className="flex items-center">
-              <div className="w-6 h-6 bg-gray-300 rounded-full"></div>
-              <span className="ml-2 text-sm text-gray-500">Address</span>
-            </div>
-            <div className="flex-1 h-px bg-gray-300"></div>
-            <div className="flex items-center">
-              <div className="w-6 h-6 bg-gray-300 rounded-full"></div>
-              <span className="ml-2 text-sm text-gray-500">Payment</span>
-            </div>
-          </div>
+  if (loading && !cart) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading your cart...</p>
         </div>
+      </div>
+    );
+  }
 
-        {/* Delivery Address */}
-        <div className="bg-white mx-4 mt-4 p-4 rounded-lg shadow-sm">
-          <div className="flex items-start justify-between">
-            <div className="flex items-start space-x-3">
-              <MapPin className="w-5 h-5 text-gray-600 mt-1" />
-              <div>
-                <p className="font-medium text-gray-800">Deliver to: Rajat Singh, 212601</p>
-                <p className="text-sm text-gray-600">247 Anand Puram Colony, Harjharganj, Fatehpur</p>
-              </div>
-            </div>
-            <Button variant="ghost" size="sm" className="text-obeyyo-pink font-medium">
-              Change
-            </Button>
-          </div>
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-600 text-lg mb-4">😞</div>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <button
+            onClick={getCart}
+            className="bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700"
+          >
+            Try Again
+          </button>
         </div>
+      </div>
+    );
+  }
 
-        {/* Offers Section */}
-        <div className="mx-4 mt-4">
-          <div className="bg-white p-4 rounded-lg shadow-sm">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="flex space-x-2">
-                  <img src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=24&h=24&fit=crop" alt="Offer" className="w-6 h-6 rounded" />
-                  <img src="https://images.unsplash.com/photo-1556742502-ec7c0e9f34b1?w=24&h=24&fit=crop" alt="Offer" className="w-6 h-6 rounded" />
-                  <img src="https://images.unsplash.com/photo-1556742173-1a870b3d7788?w=24&h=24&fit=crop" alt="Offer" className="w-6 h-6 rounded" />
-                  <img src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=24&h=24&fit=crop" alt="Offer" className="w-6 h-6 rounded" />
-                </div>
-                <div>
-                  <p className="font-medium text-gray-800">Upto ₹250 Cashback</p>
-                  <p className="text-xs text-gray-600">on UPI transaction on a min spend...</p>
-                </div>
-              </div>
-              <span className="text-obeyyo-pink text-sm font-medium">+12 Offers ›</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Savings Banner */}
-        <div className="mx-4 mt-4">
-          <div className="bg-green-50 border border-green-200 p-3 rounded-lg">
-            <div className="flex items-center space-x-2">
-              <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
-                <div className="w-2 h-2 bg-white rounded-full"></div>
-              </div>
-              <span className="text-green-700 font-medium">You're saving ₹{getTotalSavings().toLocaleString()} on this order</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Items Selection */}
-        <div className="mx-4 mt-4">
-          <div className="bg-white p-4 rounded-lg shadow-sm">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <input
-                  type="checkbox"
-                  checked={selectedItems.length === cartItems.length}
-                  onChange={() => {
-                    if (selectedItems.length === cartItems.length) {
-                      setSelectedItems([]);
-                    } else {
-                      setSelectedItems(cartItems.map(item => item.id));
-                    }
-                  }}
-                  className="w-5 h-5 text-obeyyo-pink rounded border-2 border-gray-300"
-                />
-                <span className="font-medium">
-                  {selectedItems.length}/{cartItems.length} ITEMS SELECTED 
-                  <span className="text-obeyyo-pink"> (₹{getTotalPrice().toLocaleString()})</span>
-                </span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Button variant="ghost" size="sm" className="p-2">
-                  <Share className="w-4 h-4 text-gray-600" />
-                </Button>
-                <Button variant="ghost" size="sm" className="p-2">
-                  <Trash2 className="w-4 h-4 text-gray-600" />
-                </Button>
-                <Button variant="ghost" size="sm" className="p-2">
-                  <Tag className="w-4 h-4 text-gray-600" />
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Cart Items */}
-        <div className="mx-4 mt-4 space-y-4">
-          {cartItems.map((item) => (
-            <div key={item.id} className="bg-white rounded-lg p-4 shadow-sm">
-              <div className="flex items-start space-x-3">
-                <input
-                  type="checkbox"
-                  checked={selectedItems.includes(item.id)}
-                  onChange={() => toggleItemSelection(item.id)}
-                  className="w-5 h-5 text-obeyyo-pink rounded border-2 border-gray-300 mt-2"
-                />
-                <img
-                  src={item.image}
-                  alt={item.name}
-                  className="w-20 h-20 object-cover rounded-lg"
-                />
-                
-                <div className="flex-1">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h3 className="font-medium text-gray-800">{item.brand}</h3>
-                      <p className="text-sm text-gray-600 mt-1">{item.name}</p>
-                      <p className="text-xs text-gray-500 mt-1">Sold by: {item.brand} C...</p>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeItem(item.id)}
-                      className="p-1"
-                    >
-                      <Trash2 className="w-4 h-4 text-gray-400" />
-                    </Button>
-                  </div>
-                  
-                  <div className="flex items-center justify-between mt-3">
-                    <div className="flex items-center space-x-4">
-                      <div className="flex items-center space-x-2">
-                        <span className="text-sm text-gray-600">Size: {item.size || "M"}</span>
-                        <Button variant="ghost" size="sm" className="p-1">
-                          <Edit3 className="w-3 h-3 text-gray-400" />
-                        </Button>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <span className="text-sm text-gray-600">Qty: {item.quantity}</span>
-                        <Button variant="ghost" size="sm" className="p-1">
-                          <Edit3 className="w-3 h-3 text-gray-400" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {item.originalPrice && (
-                    <div className="mt-2">
-                      <Badge className="bg-red-100 text-red-600 text-xs">
-                        {Math.round(((item.originalPrice - item.price) / item.originalPrice) * 100)}% OFF
-                      </Badge>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Items Selected Summary */}
-        <div className="mx-4 mt-4 mb-6">
-          <div className="bg-white p-4 rounded-lg shadow-sm">
-            <p className="text-center text-gray-600 font-medium">
-              {selectedItems.length} Items selected for order
+  if (!cart || cart.items.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div className="text-center">
+            <div className="text-gray-400 text-6xl mb-4">🛒</div>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Your cart is empty</h2>
+            <p className="text-gray-600 mb-8">
+              Looks like you haven't added any items to your cart yet.
             </p>
-          </div>
-        </div>
-
-        {/* Fixed Bottom Checkout */}
-        <div className="fixed bottom-16 left-0 right-0 bg-white border-t shadow-lg">
-          <div className="px-4 py-4">
-            <Button 
-              onClick={handleProceedToCheckout}
-              disabled={selectedItems.length === 0}
-              className="w-full bg-obeyyo-pink hover:bg-obeyyo-pink/90 text-white py-4 text-lg font-semibold rounded-lg"
+            <Link
+              to="/products"
+              className="bg-indigo-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-indigo-700"
             >
-              PLACE ORDER
-            </Button>
+              Continue Shopping
+            </Link>
           </div>
         </div>
       </div>
-    </Layout>
+    );
+  }
+
+  const subtotal = cart.subtotal || cart.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const tax = cart.tax || subtotal * 0.18;
+  const shipping = cart.shipping || (subtotal > 500 ? 0 : 50);
+  const total = cart.total || subtotal + tax + shipping - discount;
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Shopping Cart</h1>
+          <button
+            onClick={handleClearCart}
+            className="text-red-600 hover:text-red-700 text-sm font-medium"
+          >
+            Clear Cart
+          </button>
+        </div>
+
+        <div className="lg:grid lg:grid-cols-12 lg:gap-x-12 lg:items-start">
+          {/* Cart Items */}
+          <div className="lg:col-span-7">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+              <ul className="divide-y divide-gray-200">
+                {cart.items.map((item) => (
+                  <li key={item.id} className="p-6">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0">
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="w-20 h-20 object-cover rounded-md"
+                        />
+                      </div>
+
+                      <div className="ml-6 flex-1">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <h3 className="text-lg font-medium text-gray-900">
+                              {item.name}
+                            </h3>
+                            {item.size && (
+                              <p className="mt-1 text-sm text-gray-500">
+                                Size: {item.size}
+                              </p>
+                            )}
+                            {item.color && (
+                              <p className="mt-1 text-sm text-gray-500">
+                                Color: {item.color}
+                              </p>
+                            )}
+                          </div>
+                          <p className="ml-4 text-lg font-medium text-gray-900">
+                            {formatPrice(item.price * item.quantity)}
+                          </p>
+                        </div>
+
+                        <div className="mt-4 flex items-center justify-between">
+                          <div className="flex items-center">
+                            <button
+                              onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+                              disabled={item.quantity <= 1}
+                              className="p-1 border border-gray-300 rounded-l-md disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              <svg className="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                              </svg>
+                            </button>
+                            <span className="px-3 py-1 border-t border-b border-gray-300 text-sm">
+                              {item.quantity}
+                            </span>
+                            <button
+                              onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                              className="p-1 border border-gray-300 rounded-r-md"
+                            >
+                              <svg className="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                              </svg>
+                            </button>
+                          </div>
+
+                          <button
+                            onClick={() => handleRemoveItem(item.id)}
+                            className="text-red-600 hover:text-red-700 text-sm font-medium"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          {/* Order Summary */}
+          <div className="mt-8 lg:mt-0 lg:col-span-5">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <h2 className="text-lg font-medium text-gray-900 mb-4">Order Summary</h2>
+
+              <div className="space-y-4">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Subtotal</span>
+                  <span className="text-gray-900">{formatPrice(subtotal)}</span>
+                </div>
+
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Shipping</span>
+                  <span className="text-gray-900">
+                    {shipping === 0 ? 'Free' : formatPrice(shipping)}
+                  </span>
+                </div>
+
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Tax</span>
+                  <span className="text-gray-900">{formatPrice(tax)}</span>
+                </div>
+
+                {appliedCoupon && (
+                  <div className="flex justify-between">
+                    <span className="text-green-600">Discount ({appliedCoupon})</span>
+                    <span className="text-green-600">-{formatPrice(discount)}</span>
+                  </div>
+                )}
+
+                <div className="border-t border-gray-200 pt-4 flex justify-between">
+                  <span className="text-lg font-medium text-gray-900">Total</span>
+                  <span className="text-lg font-medium text-gray-900">
+                    {formatPrice(total)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Coupon Code */}
+              <div className="mt-6">
+                {!appliedCoupon ? (
+                  <div className="flex">
+                    <input
+                      type="text"
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value)}
+                      placeholder="Enter coupon code"
+                      className="flex-1 border border-gray-300 rounded-l-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                    <button
+                      onClick={handleApplyCoupon}
+                      disabled={!couponCode.trim()}
+                      className="bg-gray-600 text-white px-4 py-2 rounded-r-md text-sm font-medium hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Apply
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between bg-green-50 px-3 py-2 rounded-md">
+                    <span className="text-green-800 text-sm">
+                      Coupon <strong>{appliedCoupon}</strong> applied
+                    </span>
+                    <button
+                      onClick={() => {
+                        setAppliedCoupon('');
+                        setDiscount(0);
+                      }}
+                      className="text-green-800 hover:text-green-900"
+                    >
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-6 space-y-3">
+                <button
+                  onClick={handleCheckout}
+                  disabled={loading}
+                  className="w-full bg-indigo-600 text-white py-3 px-4 rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                >
+                  {loading ? 'Processing...' : 'Proceed to Checkout'}
+                </button>
+
+                <Link
+                  to="/products"
+                  className="block text-center bg-white border border-gray-300 text-gray-700 py-3 px-4 rounded-md hover:bg-gray-50 font-medium"
+                >
+                  Continue Shopping
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 
