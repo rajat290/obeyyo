@@ -69,16 +69,8 @@ const Checkout: React.FC = () => {
           size: item.size,
           color: item.color
         })),
-        shippingAddress: {
-          fullName: selectedAddressData.fullName,
-          phone: selectedAddressData.phone,
-          addressLine1: selectedAddressData.addressLine1,
-          addressLine2: selectedAddressData.addressLine2,
-          city: selectedAddressData.city,
-          state: selectedAddressData.state,
-          pincode: selectedAddressData.pincode,
-          country: selectedAddressData.country
-        },
+        // pass the full Address object to match CreateOrderData's shippingAddress type
+        shippingAddress: selectedAddressData,
         paymentMethod: paymentMethod,
         totalAmount: cart.total || calculateTotal()
       };

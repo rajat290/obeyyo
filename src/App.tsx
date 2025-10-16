@@ -15,6 +15,8 @@ import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
 import OrderSuccess from './pages/OrderSuccess';
 import Wishlist from './pages/Wishlist';
+import Orders from './pages/Orders';
+import OrderDetails from './pages/OrderDetails';
 import './App.css';
 
 const App: React.FC = () => {
@@ -36,7 +38,9 @@ const App: React.FC = () => {
                   <Route path="/checkout" element={<Checkout />} />
                   <Route path="/order-success/:orderId" element={<OrderSuccess />} />
                   <Route path="/wishlist" element={<Wishlist />} />
-                  
+                   <Route path="/orders" element={<Orders />} />
+  <Route path="/orders/:orderId" element={<OrderDetails />} />
+
                   {/* Category Routes */}
                   <Route path="/men" element={<CategoryPage />} />
                   <Route path="/women" element={<CategoryPage />} />
