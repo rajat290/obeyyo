@@ -21,12 +21,12 @@ const productSchema = new mongoose.Schema({
     type: String,
     trim: true,
   },
-  categoryId: {
+  category: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Category',
     required: true,
   },
-  brandId: {
+  brand: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Brand',
   },
@@ -97,7 +97,7 @@ const productSchema = new mongoose.Schema({
     max: 5,
     default: 0,
   },
-  totalReviews: {
+  reviewCount: {
     type: Number,
     default: 0,
   },
