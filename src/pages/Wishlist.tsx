@@ -1,104 +1,238 @@
+import React, { useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useWishlist } from '../hooks/useWishlist';
+import { useCart } from '../hooks/userCart';
+import { useAuth } from '../hooks/useAuth';
+import { formatPrice } from '../utils/helpers';
 
-import { useState, useEffect } from "react";
-import Layout from "@/components/Layout";
-import ProductCard from "@/components/ProductCard";
-import { Heart, ShoppingBag } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
-
-const Wishlist = () => {
-  const [wishlistedProducts, setWishlistedProducts] = useState<any[]>([]);
+const Wishlist: React.FC = () => {
+  const { wishlist, loading, error, removeFromWishlist, getWishlist } = useWishlist();
+  const { addToCart } = useCart();
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    window.scrollTo(0, 0);
-    
-    const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
-    
-    // Mock product data - in real app, you'd fetch from API
-    const allProducts = [
-      {
-        id: "t-1",
-        name: "Oversized Graphic Hoodie",
-        price: 1299,
-        originalPrice: 2499,
-        rating: 4.8,
-        reviews: 245,
-        image: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400",
-        brand: "UrbanVibe",
-        isTrending: true
-      },
-      {
-        id: "t-2",
-        name: "Cropped Denim Jacket",
-        price: 1599,
-        originalPrice: 2999,
-        rating: 4.6,
-        reviews: 189,
-        image: "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400",
-        brand: "RebelWear",
-        isTrending: true
-      },
-      {
-        id: "fs-1",
-        name: "Premium Wireless Headphones",
-        price: 1999,
-        originalPrice: 4999,
-        rating: 4.9,
-        reviews: 342,
-        image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400",
-        brand: "AudioMax",
-        isFlashSale: true
-      },
-      {
-        id: "na-1",
-        name: "Designer Midi Dress",
-        price: 2299,
-        originalPrice: 3999,
-        rating: 4.8,
-        reviews: 156,
-        image: "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=400",
-        brand: "ElegantWear",
-        isNew: true
-      }
-    ];
-    
-    const wishlistedItems = allProducts.filter(product => wishlist.includes(product.id));
-    setWishlistedProducts(wishlistedItems);
-  }, []);
+    if (isAuthenticated) {
+      getWishlist();
+    }
+  }, [isAuthenticated]);
 
-  if (wishlistedProducts.length === 0) {
+  const handleRemoveFromWishlist = async (productId: string): Promise<void> => {
+    try {
+      await removeFromWishlist(productId);
+    } catch (err) {
+      console.error('Failed to remove from wishlist:', err);
+    }
+  };
+
+  const handleMoveToCart = async (productId: string): Promise<void> => {
+    try {
+      await addToCart({
+        productId,
+        quantity: 1,
+      });
+      await removeFromWishlist(productId);
+      // Show success message (you can add toast notification here)
+      alert('Product moved to cart successfully!');
+    } catch (err) {
+      console.error('Failed to move to cart:', err);
+      alert('Failed to move product to cart. Please try again.');
+    }
+  };
+
+  const handleAddToCart = async (productId: string): Promise<void> => {
+    try {
+      await addToCart({
+        productId,
+        quantity: 1,
+      });
+      // Show success message (you can add toast notification here)
+      alert('Product added to cart successfully!');
+    } catch (err) {
+      console.error('Failed to add to cart:', err);
+      alert('Failed to add product to cart. Please try again.');
+    }
+  };
+
+  if (!isAuthenticated) {
     return (
-      <Layout>
-        <div className="flex flex-col items-center justify-center min-h-[60vh] px-4">
-          <Heart className="w-24 h-24 text-gray-300 mb-4" />
-          <h2 className="text-xl font-bold text-gray-800 mb-2">Your wishlist is empty</h2>
-          <p className="text-gray-600 text-center mb-6">Save items you love to buy them later!</p>
-          <Link to="/">
-            <Button className="bg-gradient-to-r from-obeyyo-pink to-obeyyo-blue text-white">
-              Continue Shopping
-            </Button>
-          </Link>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="max-w-md w-full bg-white rounded-lg shadow-md p-6 text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Sign In Required</h2>
+          <p className="text-gray-600 mb-6">Please sign in to view your wishlist.</p>
+          <button
+            onClick={() => navigate('/login', { state: { from: '/wishlist' } })}
+            className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700"
+          >
+            Sign In
+          </button>
         </div>
-      </Layout>
+      </div>
+    );
+  }
+
+  if (loading && wishlist.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading your wishlist...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-600 text-lg mb-4">😞</div>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <button
+            onClick={getWishlist}
+            className="bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (wishlist.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div className="text-center">
+            <div className="text-gray-400 text-6xl mb-4">❤️</div>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Your wishlist is empty</h2>
+            <p className="text-gray-600 mb-8">
+              Save items you love to your wishlist. Review them anytime and easily move them to your cart.
+            </p>
+            <Link
+              to="/products"
+              className="bg-indigo-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-indigo-700"
+            >
+              Start Shopping
+            </Link>
+          </div>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Layout>
-      <div className="px-4 py-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-obeyyo-pink to-obeyyo-blue bg-clip-text text-transparent">
-            My Wishlist ({wishlistedProducts.length})
-          </h1>
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">My Wishlist</h1>
+          <span className="text-gray-600">
+            {wishlist.length} {wishlist.length === 1 ? 'item' : 'items'}
+          </span>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          {wishlistedProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+          <div className="divide-y divide-gray-200">
+            {wishlist.map((item) => (
+              <div key={item.id} className="p-6">
+                <div className="flex items-start">
+                  <Link 
+                    to={`/product/${item.productId}`}
+                    className="flex-shrink-0"
+                  >
+                    <img
+                      src={item.product.images?.[0]}
+                      alt={item.product.name}
+                      className="w-20 h-20 object-cover rounded-md hover:opacity-90 transition-opacity"
+                    />
+                  </Link>
+
+                  <div className="ml-6 flex-1">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <Link 
+                          to={`/product/${item.productId}`}
+                          className="text-lg font-medium text-gray-900 hover:text-indigo-600"
+                        >
+                          {item.product.name}
+                        </Link>
+                        <p className="mt-1 text-sm text-gray-500">
+                          {item.product.brand}
+                        </p>
+                        <p className="mt-2 text-lg font-bold text-gray-900">
+                          {formatPrice(item.product.price)}
+                        </p>
+                        {item.product.originalPrice && item.product.originalPrice > item.product.price && (
+                          <p className="text-sm text-gray-500 line-through">
+                            {formatPrice(item.product.originalPrice)}
+                          </p>
+                        )}
+                      </div>
+
+                      <button
+                        onClick={() => handleRemoveFromWishlist(item.productId)}
+                        className="ml-4 text-gray-400 hover:text-red-500 transition-colors"
+                        title="Remove from wishlist"
+                      >
+                        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+
+                    <div className="mt-4 flex space-x-3">
+                      <button
+                        onClick={() => handleMoveToCart(item.productId)}
+                        className="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 transition-colors"
+                      >
+                        Move to Cart
+                      </button>
+                      
+                      <button
+                        onClick={() => handleAddToCart(item.productId)}
+                        className="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-50 transition-colors"
+                      >
+                        Add to Cart
+                      </button>
+                    </div>
+
+                    {!item.product.inStock && (
+                      <div className="mt-2">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                          Out of Stock
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-8 flex justify-between items-center">
+          <Link
+            to="/products"
+            className="bg-white border border-gray-300 text-gray-700 px-6 py-3 rounded-md font-medium hover:bg-gray-50 transition-colors"
+          >
+            Continue Shopping
+          </Link>
+          
+          {wishlist.length > 0 && (
+            <button
+              onClick={() => {
+                if (window.confirm('Are you sure you want to clear your entire wishlist?')) {
+                  wishlist.forEach(item => handleRemoveFromWishlist(item.productId));
+                }
+              }}
+              className="text-red-600 hover:text-red-700 font-medium"
+            >
+              Clear Wishlist
+            </button>
+          )}
         </div>
       </div>
-    </Layout>
+    </div>
   );
 };
 
