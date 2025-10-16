@@ -1,67 +1,65 @@
+import { Product } from "../../types";
+import ProductCard from "@/components/ProductCard";
+import SkeletonLoader from "@/components/SkeletonLoader";
 
-import { Link } from "react-router-dom";
-import { ChevronRight } from "lucide-react";
-import ProductSlider from "@/components/ProductSlider";
-import SectionBanner from "@/components/SectionBanner";
-
+// ✅ ADD products prop interface
 interface NewArrivalsSectionProps {
   isLoading: boolean;
+  products?: Product[]; // Add this line
 }
 
-const NewArrivalsSection = ({ isLoading }: NewArrivalsSectionProps) => {
-  const newArrivals = [{
+const NewArrivalsSection = ({ 
+  isLoading, 
+  products = [] // ✅ Accept products prop
+}: NewArrivalsSectionProps) => {
+  
+  // ✅ Static fallback data
+  const staticNewArrivals = [{
     id: "na-1",
-    name: "Designer Midi Dress",
-    price: 2299,
-    originalPrice: 3999,
-    rating: 4.8,
-    reviews: 156,
-    image: "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=400",
-    brand: "ElegantWear",
+    name: "Smart Watch Pro",
+    price: 8999,
+    originalPrice: 12999,
+    rating: 4.7,
+    reviews: 234,
+    image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400",
+    brand: "TechWear",
     isNew: true
   }, {
     id: "na-2",
-    name: "Casual Cotton Tee",
-    price: 599,
-    originalPrice: 999,
-    rating: 4.4,
-    reviews: 234,
-    image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400",
-    brand: "BasicWear",
-    isNew: true
-  }, {
-    id: "na-3",
-    name: "Trendy Sneakers",
-    price: 3499,
-    originalPrice: 5999,
-    rating: 4.7,
+    name: "Wireless Earbuds",
+    price: 2999,
+    originalPrice: 4999,
+    rating: 4.5,
     reviews: 189,
-    image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400",
-    brand: "StreetWear",
+    image: "https://images.unsplash.com/photo-1590658165737-15a047b8b5e0?w=400",
+    brand: "SoundPro",
     isNew: true
   }];
 
-  return (
-    <section className="bg-gradient-to-br from-blue-500 via-cyan-500 to-teal-500 mx-4 rounded-2xl p-4 shadow-2xl">
-      <div className="mb-4">
-        <SectionBanner
-          title="New Arrivals"
-          subtitle="Fresh styles for the season"
-          imageUrl="https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=800"
-          height="h-28"
-        />
-      </div>
+  // ✅ Smart selection: API products OR static fallback
+  const displayProducts = products.length > 0 ? products : staticNewArrivals;
 
-      <div className="flex items-center justify-between mb-4 bg-black/20 backdrop-blur-sm rounded-xl px-4 py-3">
-        <div className="flex items-center gap-2">
-          <span className="text-lg animate-pulse">🌟</span>
-          <h2 className="text-lg font-bold text-white">Latest Collection</h2>
-        </div>
-        <Link to="/new-arrivals" className="text-sm text-white/90 hover:text-white flex items-center gap-1 font-medium transition-colors">
-          View All <ChevronRight className="w-4 h-4" />
-        </Link>
+  return (
+    <section className="mx-4">
+      <div className="flex items-center justify-between mb-4 px-4">
+        <h2 className="text-xl font-bold text-gray-900">New Arrivals</h2>
+        <button className="text-sm text-blue-600 font-medium">View All</button>
       </div>
-      <ProductSlider title="" products={newArrivals} />
+      
+      <div className="grid grid-cols-2 gap-3 px-4">
+        {isLoading 
+          ? Array.from({ length: 4 }).map((_, i) => (
+              <div key={i}>
+                <SkeletonLoader type="product" />
+              </div>
+            ))
+          : displayProducts.map(product => (
+              <div key={product.id}>
+                <ProductCard product={product} />
+              </div>
+            ))
+        }
+      </div>
     </section>
   );
 };

@@ -1,25 +1,29 @@
-
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Zap, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Product } from "../../types";
 import ProductCard from "@/components/ProductCard";
 import SkeletonLoader from "@/components/SkeletonLoader";
 import SectionBanner from "@/components/SectionBanner";
 
 interface FlashSaleSectionProps {
   isLoading: boolean;
+  products?: Product[]; // ✅ Now actually using this prop
 }
 
 const FlashSaleSection = ({
-  isLoading
+  isLoading,
+  products = [] // ✅ Default empty array for dynamic products
 }: FlashSaleSectionProps) => {
   const [timeLeft, setTimeLeft] = useState({
     hours: 8,
     minutes: 45,
     seconds: 23
   });
-  const flashSaleProducts = [{
+
+  // ✅ Static fallback products - agar API se products nahi aaye toh use karo
+  const staticFlashSaleProducts = [{
     id: "fs-1",
     name: "Premium Wireless Headphones",
     price: 1999,
@@ -61,6 +65,9 @@ const FlashSaleSection = ({
     isFlashSale: true
   }];
 
+  // ✅ DECISION LOGIC: API products ya static products use karo
+  const displayProducts = products && products.length > 0 ? products : staticFlashSaleProducts;
+
   useEffect(() => {
     const timer = setInterval(() => {
       setTimeLeft(prev => {
@@ -99,12 +106,16 @@ const FlashSaleSection = ({
     </div>
   );
 
+  // ✅ ProductGrid component - ab dynamic products use karta hai
   const ProductGrid = ({
-    products,
     showSkeleton = false,
     maxProducts = 4
+  }: {
+    showSkeleton?: boolean;
+    maxProducts?: number;
   }) => {
-    const displayProducts = products.slice(0, maxProducts);
+    const productsToShow = displayProducts.slice(0, maxProducts);
+    
     return (
       <div className="grid grid-cols-2 gap-3 px-4">
         {showSkeleton 
@@ -113,7 +124,7 @@ const FlashSaleSection = ({
                 <SkeletonLoader type="product" />
               </div>
             ))
-          : displayProducts.map(product => (
+          : productsToShow.map(product => (
               <div key={product.id}>
                 <ProductCard product={product} />
               </div>
@@ -142,7 +153,8 @@ const FlashSaleSection = ({
         <FlashSaleTimer />
       </div>
       
-      <ProductGrid products={flashSaleProducts} showSkeleton={isLoading} />
+      {/* ✅ Yahan ab dynamic products display honge */}
+      <ProductGrid showSkeleton={isLoading} />
       
       <div className="mt-4 text-center">
         <Button 

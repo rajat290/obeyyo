@@ -1,4 +1,4 @@
-// User Types
+// User Types (existing)
 export interface User {
   id: string;
   email: string;
@@ -24,25 +24,28 @@ export interface Address {
   isDefault: boolean;
 }
 
-export interface LoginData {
-  email: string;
-  password: string;
+// ✅ ADD THESE MISSING TYPES:
+
+// Category Types
+export interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  image: string;
+  description?: string;
+  parentId?: string;
 }
 
-export interface RegisterData {
-  email: string;
-  password: string;
-  firstName: string;
-  lastName: string;
-  phone?: string;
+// Brand Types
+export interface Brand {
+  id: string;
+  name: string;
+  slug: string;
+  logo: string;
+  productCount?: number;
 }
 
-export interface LoginResponse {
-  user: User;
-  token: string;
-}
-
-// Product Types
+// Product Types (existing but ensure they have all properties)
 export interface Product {
   id: string;
   name: string;
@@ -60,6 +63,7 @@ export interface Product {
   isNew: boolean;
   isTrending: boolean;
   slug: string;
+  isFlashSale?: boolean; // ✅ Add this for flash sale
 }
 
 export interface ProductFilters {
@@ -145,4 +149,39 @@ export interface AuthContextType {
   updateUser: (userData: User) => void;
   clearError: () => void;
   isAuthenticated: boolean;
+}
+
+export interface LoginData {
+  email: string;
+  password: string;
+}
+
+export interface RegisterData {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  phone?: string;
+}
+// ... existing types ...
+
+// ✅ ADD THESE AUTH TYPES:
+export interface LoginResponse {
+  user: User;
+  token: string;
+}
+
+export interface RegisterResponse {
+  user: User;
+  token: string;
+}
+
+// ✅ ADD THESE FOR SERVICE FILES:
+export interface AuthResponse {
+  success: boolean;
+  data?: {
+    user: User;
+    token: string;
+  };
+  message?: string;
 }

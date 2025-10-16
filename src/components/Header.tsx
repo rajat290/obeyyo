@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { Button } from "@/components/ui/button";
+import SearchBar from './SearchBar';
 
 const Header: React.FC = () => {
   const { user, logout, isAuthenticated } = useAuth();
@@ -49,6 +50,7 @@ const Header: React.FC = () => {
           <div className="flex items-center space-x-4">
             
             {/* Search Icon */}
+            <SearchBar />
             <button className="text-gray-700 hover:text-[#FF6B9D] transition-colors">
               <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />

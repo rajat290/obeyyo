@@ -1,47 +1,52 @@
+import { Product } from "../../types";
+import ProductCard from "@/components/ProductCard";
+import SkeletonLoader from "@/components/SkeletonLoader";
 
-import { Link } from "react-router-dom";
-import { ChevronRight } from "lucide-react";
-import ProductSlider from "@/components/ProductSlider";
-
+// ✅ ADD products prop
 interface TopPicksSectionProps {
   isLoading: boolean;
+  products?: Product[];
 }
 
-const TopPicksSection = ({ isLoading }: TopPicksSectionProps) => {
-  const topPicks = [{
+const TopPicksSection = ({ 
+  isLoading, 
+  products = [] 
+}: TopPicksSectionProps) => {
+  
+  const staticTopPicks = [{
     id: "tp-1",
-    name: "Nike Air Max Sneakers",
-    price: 8999,
-    originalPrice: 12999,
+    name: "Premium Headphones",
+    price: 5999,
+    originalPrice: 9999,
     rating: 4.9,
-    reviews: 892,
-    image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400",
-    brand: "Nike",
-    isTopRated: true
-  }, {
-    id: "tp-2",
-    name: "Premium Watch",
-    price: 15999,
-    originalPrice: 24999,
-    rating: 4.8,
-    reviews: 345,
-    image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400",
-    brand: "TimeMaster",
-    isTopRated: true
+    reviews: 342,
+    image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400",
+    brand: "AudioMax"
   }];
 
+  const displayProducts = products.length > 0 ? products : staticTopPicks;
+
   return (
-    <section className="bg-gradient-to-br from-slate-700 via-gray-800 to-zinc-900 mx-4 rounded-2xl p-4 shadow-2xl">
-      <div className="flex items-center justify-between mb-4 bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3">
-        <div className="flex items-center gap-2">
-          <span className="text-lg animate-bounce">🏆</span>
-          <h2 className="text-lg font-bold text-white">Top Picks</h2>
-        </div>
-        <Link to="/top-picks" className="text-sm text-white/90 hover:text-white flex items-center gap-1 font-medium transition-colors">
-          View All <ChevronRight className="w-4 h-4" />
-        </Link>
+    <section className="mx-4">
+      <div className="flex items-center justify-between mb-4 px-4">
+        <h2 className="text-xl font-bold text-gray-900">Top Picks For You</h2>
+        <button className="text-sm text-blue-600 font-medium">View All</button>
       </div>
-      <ProductSlider title="" products={topPicks} />
+      
+      <div className="grid grid-cols-2 gap-3 px-4">
+        {isLoading 
+          ? Array.from({ length: 4 }).map((_, i) => (
+              <div key={i}>
+                <SkeletonLoader type="product" />
+              </div>
+            ))
+          : displayProducts.map(product => (
+              <div key={product.id}>
+                <ProductCard product={product} />
+              </div>
+            ))
+        }
+      </div>
     </section>
   );
 };
