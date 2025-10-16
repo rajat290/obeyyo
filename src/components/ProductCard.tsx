@@ -1,34 +1,40 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, memo } from 'react';
+import { Link } from 'react-router-dom';
 import { useCart } from '../hooks/userCart';
 import { useWishlist } from '../hooks/useWishlist';
 import { useAuth } from '../hooks/useAuth';
 import { Product } from '../types';
 import { formatPrice, calculateDiscount } from '../utils/helpers';
+import { analyticsService } from '../services/analyticsService';
+import LazyImage from './LazyImage';
 
 interface ProductCardProps {
   product: Product;
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
+const ProductCard: React.FC<ProductCardProps> = memo(({ product }) => {
   const { addToCart } = useCart();
   const { addToWishlist, removeFromWishlist, checkInWishlist } = useWishlist();
   const { isAuthenticated } = useAuth();
-  const navigate = useNavigate();
-
+  
   const [addingToCart, setAddingToCart] = useState<boolean>(false);
   const [wishlistLoading, setWishlistLoading] = useState<boolean>(false);
   const [isInWishlist, setIsInWishlist] = useState<boolean>(false);
-  const [showLoginPrompt, setShowLoginPrompt] = useState<boolean>(false);
+  const [imageLoaded, setImageLoaded] = useState<boolean>(false);
 
   useEffect(() => {
-    // Check if product is in wishlist
     setIsInWishlist(checkInWishlist(product.id));
   }, [product.id, checkInWishlist]);
 
   const handleAddToCart = async (): Promise<void> => {
     if (!isAuthenticated) {
-      setShowLoginPrompt(true);
+      // Track unauthorized cart attempt
+      analyticsService.trackEvent({
+        event: 'cart_attempt_unauthorized',
+        category: 'Ecommerce',
+        action: 'cart_attempt_unauthorized',
+        label: product.name,
+      });
       return;
     }
 
@@ -37,10 +43,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       await addToCart({
         productId: product.id,
         quantity: 1,
-        size: product.sizes?.[0] || '',
-        color: product.colors?.[0] || '',
+        size: product.sizes[0],
+        color: product.colors[0],
       });
-      // Success feedback can be added here (toast notification)
+
+      // Track successful add to cart
+      analyticsService.trackAddToCart(product.id, product.name, 1, product.price);
     } catch (error) {
       console.error('Failed to add to cart:', error);
     } finally {
@@ -49,14 +57,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   };
 
   const handleWishlistToggle = async (): Promise<void> => {
-    if (!isAuthenticated) {
-      navigate('/login', { state: { from: window.location.pathname } });
-      return;
-    }
+    if (!isAuthenticated) return;
 
     try {
       setWishlistLoading(true);
-
+      
       if (isInWishlist) {
         await removeFromWishlist(product.id);
         setIsInWishlist(false);
@@ -64,11 +69,28 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         await addToWishlist(product.id);
         setIsInWishlist(true);
       }
+
+      // Track wishlist action
+      analyticsService.trackEvent({
+        event: isInWishlist ? 'remove_from_wishlist' : 'add_to_wishlist',
+        category: 'Ecommerce',
+        action: isInWishlist ? 'remove_from_wishlist' : 'add_to_wishlist',
+        label: product.name,
+        metadata: { productId: product.id },
+      });
     } catch (error) {
       console.error('Failed to update wishlist:', error);
     } finally {
       setWishlistLoading(false);
     }
+  };
+
+  const handleProductClick = (): void => {
+    analyticsService.trackProductView(product.id, product.name);
+  };
+
+  const handleImageLoad = (): void => {
+    setImageLoaded(true);
   };
 
   return (
@@ -101,13 +123,29 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         )}
       </button>
 
-      <Link to={`/product/${product.id}`} className="block">
-        <div className="aspect-w-1 aspect-h-1 bg-gray-200 relative">
-          <img
+      <Link 
+        to={`/product/${product.id}`} 
+        className="block"
+        onClick={handleProductClick}
+      >
+        <div className="aspect-w-1 aspect-h-1 bg-gray-200 relative overflow-hidden">
+          <LazyImage
             src={product.images?.[0] || '/placeholder.svg'}
             alt={product.name}
-            className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+            width={400}
+            height={400}
+            className={`w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300 ${
+              imageLoaded ? 'opacity-100' : 'opacity-0'
+            }`}
+            onLoad={handleImageLoad}
           />
+          
+          {/* Loading Skeleton */}
+          {!imageLoaded && (
+            <div className="absolute inset-0 bg-gray-300 animate-pulse"></div>
+          )}
+
+          {/* Product Badges */}
           {product.isNew && (
             <span className="absolute top-2 left-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
               New
@@ -125,21 +163,25 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           )}
         </div>
       </Link>
-
+      
       <div className="p-4">
-        <Link to={`/product/${product.id}`}>
-          <h3 className="text-sm font-medium text-gray-900 mb-1 line-clamp-2 hover:text-indigo-600">
+        <Link 
+          to={`/product/${product.id}`}
+          onClick={handleProductClick}
+        >
+          <h3 className="text-sm font-medium text-gray-900 mb-1 line-clamp-2 hover:text-indigo-600 transition-colors">
             {product.name}
           </h3>
         </Link>
-
+        
+        {/* Rating */}
         <div className="flex items-center mb-2">
           <div className="flex items-center">
             {[1, 2, 3, 4, 5].map((star) => (
               <svg
                 key={star}
                 className={`w-4 h-4 ${
-                  star <= Math.floor(product.rating || 0)
+                  star <= Math.floor(product.rating)
                     ? 'text-yellow-400'
                     : 'text-gray-300'
                 }`}
@@ -150,11 +192,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               </svg>
             ))}
             <span className="ml-1 text-sm text-gray-600">
-              ({product.reviewCount || 0})
+              ({product.reviewCount})
             </span>
           </div>
         </div>
-
+        
+        {/* Price */}
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center space-x-2">
             <span className="text-lg font-bold text-gray-900">
@@ -167,7 +210,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             )}
           </div>
         </div>
-
+        
+        {/* Add to Cart Button */}
         <button
           onClick={handleAddToCart}
           disabled={addingToCart || !product.inStock}
@@ -184,21 +228,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             'Add to Cart'
           )}
         </button>
-
-        {showLoginPrompt && (
-          <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded-md">
-            <p className="text-sm text-yellow-800">
-              Please{' '}
-              <Link to="/login" className="font-medium text-yellow-900 hover:text-yellow-700 underline">
-                sign in
-              </Link>{' '}
-              to add items to cart
-            </p>
-          </div>
-        )}
       </div>
     </div>
   );
-};
+});
+
+ProductCard.displayName = 'ProductCard';
 
 export default ProductCard;
