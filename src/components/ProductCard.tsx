@@ -15,7 +15,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { addToWishlist, removeFromWishlist, checkInWishlist } = useWishlist();
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  
+
   const [addingToCart, setAddingToCart] = useState<boolean>(false);
   const [wishlistLoading, setWishlistLoading] = useState<boolean>(false);
   const [isInWishlist, setIsInWishlist] = useState<boolean>(false);
@@ -37,8 +37,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       await addToCart({
         productId: product.id,
         quantity: 1,
-        size: product.sizes[0],
-        color: product.colors[0],
+        size: product.sizes?.[0] || '',
+        color: product.colors?.[0] || '',
       });
       // Success feedback can be added here (toast notification)
     } catch (error) {
@@ -56,7 +56,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
     try {
       setWishlistLoading(true);
-      
+
       if (isInWishlist) {
         await removeFromWishlist(product.id);
         setIsInWishlist(false);
@@ -104,7 +104,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       <Link to={`/product/${product.id}`} className="block">
         <div className="aspect-w-1 aspect-h-1 bg-gray-200 relative">
           <img
-            src={product.images[0]}
+            src={product.images?.[0] || '/placeholder.svg'}
             alt={product.name}
             className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
           />
@@ -125,21 +125,21 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           )}
         </div>
       </Link>
-      
+
       <div className="p-4">
         <Link to={`/product/${product.id}`}>
           <h3 className="text-sm font-medium text-gray-900 mb-1 line-clamp-2 hover:text-indigo-600">
             {product.name}
           </h3>
         </Link>
-        
+
         <div className="flex items-center mb-2">
           <div className="flex items-center">
             {[1, 2, 3, 4, 5].map((star) => (
               <svg
                 key={star}
                 className={`w-4 h-4 ${
-                  star <= Math.floor(product.rating)
+                  star <= Math.floor(product.rating || 0)
                     ? 'text-yellow-400'
                     : 'text-gray-300'
                 }`}
@@ -150,11 +150,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               </svg>
             ))}
             <span className="ml-1 text-sm text-gray-600">
-              ({product.reviewCount})
+              ({product.reviewCount || 0})
             </span>
           </div>
         </div>
-        
+
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center space-x-2">
             <span className="text-lg font-bold text-gray-900">
@@ -167,7 +167,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             )}
           </div>
         </div>
-        
+
         <button
           onClick={handleAddToCart}
           disabled={addingToCart || !product.inStock}
