@@ -1,3 +1,27 @@
+export interface ApiEndpoints {
+  AUTH: {
+    LOGIN: string;
+    REGISTER: string;
+    LOGOUT: string;
+  };
+  USER: {
+    PROFILE: string;
+    ADDRESSES: string;
+    UPDATE_PROFILE: string;
+  };
+  PRODUCTS: {
+    GET_ALL: string;
+    GET_BY_ID: string;
+    FEATURED: string;
+    TRENDING: string;
+    NEW_ARRIVALS: string;
+    RELATED: string;
+    SEARCH: string;
+  };
+  // ... same structure but with TypeScript types
+}
+
+
 export const API_ENDPOINTS = {
   // Authentication
   AUTH: {

@@ -1,10 +1,11 @@
-import { useState, useEffect, createContext, useContext } from 'react';
+import React, { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import authService from '../services/authService';
 import { getErrorMessage } from '../utils/helpers';
+import { User, RegisterData, AuthContextType, ApiResponse, LoginResponse } from '../types';
 
-const AuthContext = createContext();
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const useAuth = () => {
+export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');
@@ -12,17 +13,21 @@ export const useAuth = () => {
   return context;
 };
 
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+interface AuthProviderProps {
+  children: ReactNode;
+}
+
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Check if user is logged in on app start
   useEffect(() => {
     checkAuthStatus();
   }, []);
 
-  const checkAuthStatus = () => {
+  const checkAuthStatus = (): void => {
     try {
       const token = localStorage.getItem('token');
       const userData = localStorage.getItem('user');
@@ -38,13 +43,13 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const login = async (email, password) => {
+  const login = async (email: string, password: string): Promise<ApiResponse<LoginResponse>> => {
     try {
       setLoading(true);
       setError(null);
       
       const response = await authService.login(email, password);
-      const { user: userData, token } = response.data;
+      const { user: userData, token } = response.data!;
 
       // Store in localStorage
       localStorage.setItem('token', token);
@@ -54,7 +59,7 @@ export const AuthProvider = ({ children }) => {
       setUser(userData);
       
       return response;
-    } catch (error) {
+    } catch (error: any) {
       const message = getErrorMessage(error);
       setError(message);
       throw new Error(message);
@@ -63,13 +68,13 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const register = async (userData) => {
+  const register = async (userData: RegisterData): Promise<ApiResponse<LoginResponse>> => {
     try {
       setLoading(true);
       setError(null);
       
       const response = await authService.register(userData);
-      const { user: newUser, token } = response.data;
+      const { user: newUser, token } = response.data!;
 
       // Store in localStorage
       localStorage.setItem('token', token);
@@ -79,7 +84,7 @@ export const AuthProvider = ({ children }) => {
       setUser(newUser);
       
       return response;
-    } catch (error) {
+    } catch (error: any) {
       const message = getErrorMessage(error);
       setError(message);
       throw new Error(message);
@@ -88,10 +93,10 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = async () => {
+  const logout = async (): Promise<void> => {
     try {
       await authService.logout();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Logout error:', error);
     } finally {
       setUser(null);
@@ -99,16 +104,16 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const updateUser = (userData) => {
+  const updateUser = (userData: User): void => {
     setUser(userData);
     localStorage.setItem('user', JSON.stringify(userData));
   };
 
-  const clearError = () => {
+  const clearError = (): void => {
     setError(null);
   };
 
-  const value = {
+  const value: AuthContextType = {
     user,
     loading,
     error,
@@ -121,7 +126,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={value}
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );

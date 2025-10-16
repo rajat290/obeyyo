@@ -1,216 +1,233 @@
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../hooks/useAuth';
+import userService from '../services/userService';
+import { User, Address } from '../types';
+import { validateEmail, validatePhone } from '../utils/validators';
+import { getErrorMessage } from '../utils/helpers';
 
-import Layout from "@/components/Layout";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { ShoppingBag, Heart, Settings, LogOut } from "lucide-react";
+const Profile: React.FC = () => {
+  const { user, updateUser } = useAuth();
+  const [profile, setProfile] = useState<User | null>(null);
+  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [message, setMessage] = useState<string>('');
+  const [error, setError] = useState<string>('');
 
-const Profile = () => {
-  const user = {
-    name: "Alex Johnson",
-    email: "alex.johnson@email.com",
-    phone: "+91 98765 43210",
-    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150",
-    memberSince: "January 2023",
-    totalOrders: 24,
-    totalSpent: 45670
+  useEffect(() => {
+    if (user) {
+      setProfile(user);
+      loadUserAddresses();
+    }
+  }, [user]);
+
+  const loadUserAddresses = async (): Promise<void> => {
+    try {
+      const response = await userService.getAddresses();
+      setAddresses(response.data?.addresses || []);
+    } catch (err: any) {
+      console.error('Error loading addresses:', err);
+    }
   };
 
-  const recentOrders = [
-    {
-      id: "ORD-001",
-      date: "2024-01-15",
-      status: "Delivered",
-      total: 1299,
-      items: 2
-    },
-    {
-      id: "ORD-002", 
-      date: "2024-01-10",
-      status: "In Transit",
-      total: 899,
-      items: 1
-    },
-    {
-      id: "ORD-003",
-      date: "2024-01-05",
-      status: "Delivered",
-      total: 2499,
-      items: 3
+  const handleProfileUpdate = async (e: React.FormEvent): Promise<void> => {
+    e.preventDefault();
+    if (!profile) return;
+
+    // Validation
+    if (!validateEmail(profile.email)) {
+      setError('Please enter a valid email address');
+      return;
     }
-  ];
+
+    if (profile.phone && !validatePhone(profile.phone)) {
+      setError('Please enter a valid phone number');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+
+    try {
+      const response = await userService.updateProfile({
+        firstName: profile.firstName,
+        lastName: profile.lastName,
+        email: profile.email,
+        phone: profile.phone,
+      });
+
+      updateUser(response.data?.user!);
+      setMessage('Profile updated successfully!');
+      
+      // Clear message after 3 seconds
+      setTimeout(() => setMessage(''), 3000);
+    } catch (err: any) {
+      setError(getErrorMessage(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    const { name, value } = e.target;
+    if (profile) {
+      setProfile({
+        ...profile,
+        [name]: value
+      });
+    }
+  };
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900">Please login to view your profile</h2>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <Layout>
-      <div className="px-4 sm:px-6 lg:px-8 py-6">
-        {/* Profile Header */}
-        <div className="bg-gradient-brand rounded-xl p-6 text-white mb-8">
-          <div className="flex items-center space-x-4">
-            <Avatar className="w-20 h-20 border-4 border-white">
-              <AvatarImage src={user.avatar} alt={user.name} />
-              <AvatarFallback>AJ</AvatarFallback>
-            </Avatar>
-            <div>
-              <h1 className="text-2xl font-bold">{user.name}</h1>
-              <p className="opacity-90">{user.email}</p>
-              <p className="text-sm opacity-75">Member since {user.memberSince}</p>
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-6">
-            <div className="text-center">
-              <div className="text-2xl font-bold">{user.totalOrders}</div>
-              <div className="text-sm opacity-75">Total Orders</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold">₹{user.totalSpent.toLocaleString()}</div>
-              <div className="text-sm opacity-75">Total Spent</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold">Gold</div>
-              <div className="text-sm opacity-75">Member Tier</div>
-            </div>
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-white shadow rounded-lg">
+          <div className="px-4 py-5 sm:p-6">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Profile Information</h2>
+            
+            {message && (
+              <div className="mb-4 rounded-md bg-green-50 p-4">
+                <div className="text-sm text-green-700">{message}</div>
+              </div>
+            )}
+            
+            {error && (
+              <div className="mb-4 rounded-md bg-red-50 p-4">
+                <div className="text-sm text-red-700">{error}</div>
+              </div>
+            )}
+
+            <form onSubmit={handleProfileUpdate}>
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <div>
+                  <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
+                    First Name
+                  </label>
+                  <input
+                    type="text"
+                    name="firstName"
+                    id="firstName"
+                    required
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    value={profile?.firstName || ''}
+                    onChange={handleInputChange}
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
+                    Last Name
+                  </label>
+                  <input
+                    type="text"
+                    name="lastName"
+                    id="lastName"
+                    required
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    value={profile?.lastName || ''}
+                    onChange={handleInputChange}
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    id="email"
+                    required
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    value={profile?.email || ''}
+                    onChange={handleInputChange}
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+                    Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    id="phone"
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    value={profile?.phone || ''}
+                    onChange={handleInputChange}
+                  />
+                </div>
+              </div>
+
+              <div className="mt-6">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loading ? 'Updating...' : 'Update Profile'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
 
-        <Tabs defaultValue="orders" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-8">
-            <TabsTrigger value="orders" className="flex items-center gap-2">
-              <ShoppingBag className="w-4 h-4" />
-              Orders
-            </TabsTrigger>
-            <TabsTrigger value="wishlist" className="flex items-center gap-2">
-              <Heart className="w-4 h-4" />
-              Wishlist
-            </TabsTrigger>
-            <TabsTrigger value="profile" className="flex items-center gap-2">
-              <Settings className="w-4 h-4" />
-              Profile
-            </TabsTrigger>
-            <TabsTrigger value="settings" className="flex items-center gap-2">
-              <LogOut className="w-4 h-4" />
-              Settings
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="orders">
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent Orders</CardTitle>
-                <CardDescription>
-                  Track and manage your recent purchases
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {recentOrders.map((order) => (
-                    <div key={order.id} className="flex items-center justify-between p-4 border rounded-lg">
+        {/* Addresses Section */}
+        <div className="mt-8 bg-white shadow rounded-lg">
+          <div className="px-4 py-5 sm:p-6">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Saved Addresses</h2>
+            
+            {addresses.length === 0 ? (
+              <p className="text-gray-500">No addresses saved yet.</p>
+            ) : (
+              <div className="space-y-4">
+                {addresses.map((address) => (
+                  <div key={address.id} className="border border-gray-200 rounded-lg p-4">
+                    <div className="flex justify-between items-start">
                       <div>
-                        <div className="font-medium">{order.id}</div>
-                        <div className="text-sm text-gray-500">{order.date}</div>
-                        <div className="text-sm text-gray-500">{order.items} items</div>
+                        <h3 className="font-medium text-gray-900">
+                          {address.fullName} {address.isDefault && (
+                            <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                              Default
+                            </span>
+                          )}
+                        </h3>
+                        <p className="text-gray-600">{address.addressLine1}</p>
+                        {address.addressLine2 && (
+                          <p className="text-gray-600">{address.addressLine2}</p>
+                        )}
+                        <p className="text-gray-600">
+                          {address.city}, {address.state} - {address.pincode}
+                        </p>
+                        <p className="text-gray-600">{address.country}</p>
+                        <p className="text-gray-600">Phone: {address.phone}</p>
                       </div>
-                      <div className="text-right">
-                        <div className="font-medium">₹{order.total}</div>
-                        <Badge variant={order.status === "Delivered" ? "default" : "secondary"}>
-                          {order.status}
-                        </Badge>
+                      <div className="flex space-x-2">
+                        <button className="text-indigo-600 hover:text-indigo-900 text-sm font-medium">
+                          Edit
+                        </button>
+                        <button className="text-red-600 hover:text-red-900 text-sm font-medium">
+                          Delete
+                        </button>
                       </div>
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="wishlist">
-            <Card>
-              <CardHeader>
-                <CardTitle>Your Wishlist</CardTitle>
-                <CardDescription>
-                  Items you've saved for later
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8 text-gray-500">
-                  Your wishlist is empty. Start adding items you love!
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="profile">
-            <Card>
-              <CardHeader>
-                <CardTitle>Personal Information</CardTitle>
-                <CardDescription>
-                  Update your personal details
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="firstName">First Name</Label>
-                      <Input id="firstName" defaultValue="Alex" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="lastName">Last Name</Label>
-                      <Input id="lastName" defaultValue="Johnson" />
-                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="profileEmail">Email</Label>
-                    <Input id="profileEmail" type="email" defaultValue={user.email} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Phone</Label>
-                    <Input id="phone" defaultValue={user.phone} />
-                  </div>
-                  <Button className="bg-gradient-brand hover:opacity-90">
-                    Save Changes
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="settings">
-            <Card>
-              <CardHeader>
-                <CardTitle>Account Settings</CardTitle>
-                <CardDescription>
-                  Manage your account preferences
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <Button variant="outline" className="w-full justify-start">
-                  Notification Preferences
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  Privacy Settings
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  Payment Methods
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  Shipping Addresses
-                </Button>
-                <hr className="my-4" />
-                <Button variant="destructive" className="w-full">
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Sign Out
-                </Button>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
-    </Layout>
+    </div>
   );
 };
 
