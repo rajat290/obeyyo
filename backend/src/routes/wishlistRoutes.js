@@ -2,12 +2,6 @@ const express = require('express');
 const router = express.Router();
 const wishlistController = require('../controllers/wishlistController');
 const { protect } = require('../middlewares/auth');
-const {
-  addToWishlistValidation,
-  removeFromWishlistValidation,
-  checkWishlistValidation,
-  moveToCartValidation
-} = require('../validators/wishlistValidators');
 
 // All wishlist routes require authentication
 router.use(protect);
@@ -16,13 +10,13 @@ router.use(protect);
 router.get('/', wishlistController.getWishlist);
 
 // POST /api/wishlist - Add product to wishlist
-router.post('/', addToWishlistValidation, wishlistController.addToWishlist);
+router.post('/', wishlistController.addToWishlist);
 
 // DELETE /api/wishlist/:productId - Remove product from wishlist
-router.delete('/:productId', removeFromWishlistValidation, wishlistController.removeFromWishlist);
+router.delete('/:productId', wishlistController.removeFromWishlist);
 
 // GET /api/wishlist/check/:productId - Check if product is in wishlist
-router.get('/check/:productId', checkWishlistValidation, wishlistController.checkWishlist);
+router.get('/check/:productId', wishlistController.checkWishlist);
 
 // DELETE /api/wishlist - Clear entire wishlist
 router.delete('/', wishlistController.clearWishlist);
@@ -31,7 +25,7 @@ router.delete('/', wishlistController.clearWishlist);
 router.get('/count', wishlistController.getWishlistItemCount);
 
 // POST /api/wishlist/move-to-cart/:productId - Move item from wishlist to cart
-router.post('/move-to-cart/:productId', moveToCartValidation, wishlistController.moveToCart);
+router.post('/move-to-cart/:productId', wishlistController.moveToCart);
 
 // GET /api/wishlist/stats - Get wishlist statistics
 router.get('/stats', wishlistController.getWishlistStats);

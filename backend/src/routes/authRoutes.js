@@ -15,18 +15,18 @@ const {
 const router = express.Router();
 
 // Public routes
-router.post('/register', authLimiter, validate(registerValidator), authController.register);
-router.post('/login', authLimiter, validate(loginValidator), authController.login);
-router.post('/forgot-password', passwordResetLimiter, validate(forgotPasswordValidator), authController.forgotPassword);
-router.post('/reset-password/:token', validate(resetPasswordValidator), authController.resetPassword);
+router.post('/register', authLimiter, authController.register);
+router.post('/login', authLimiter, authController.login);
+router.post('/forgot-password', passwordResetLimiter, authController.forgotPassword);
+router.post('/reset-password/:token', authController.resetPassword);
 router.post('/verify-email/:token', authController.verifyEmail);
 
 // Protected routes
 router.use(protect); // All routes below require authentication
 
 router.get('/profile', authController.getProfile);
-router.put('/profile', validate(updateProfileValidator), authController.updateProfile);
-router.put('/change-password', validate(changePasswordValidator), authController.changePassword);
+router.put('/profile', authController.updateProfile);
+router.put('/change-password', authController.changePassword);
 router.post('/logout', authController.logout);
 
 module.exports = router;

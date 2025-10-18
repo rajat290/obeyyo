@@ -15,19 +15,19 @@ router.use(protect);
 router.get('/', cartController.getCart);
 
 // POST /api/cart - Add item to cart
-router.post('/', addToCartValidation, cartController.addToCart);
+router.post('/', cartController.addToCart);
 
 // PUT /api/cart/:productId/:variantId - Update cart item quantity
-router.put('/:productId/:variantId', updateCartItemValidation, cartController.updateCartItem);
+router.put('/:productId/:variantId', cartController.updateCartItem);
 
 // PUT /api/cart/:productId - Update cart item quantity (no variant)
-router.put('/:productId', updateCartItemValidation, cartController.updateCartItem);
+router.put('/:productId', cartController.updateCartItem);
 
 // DELETE /api/cart/:productId/:variantId - Remove item from cart
-router.delete('/:productId/:variantId', removeFromCartValidation, cartController.removeFromCart);
+router.delete('/:productId/:variantId', cartController.removeFromCart);
 
 // DELETE /api/cart/:productId - Remove item from cart (no variant)
-router.delete('/:productId', removeFromCartValidation, cartController.removeFromCart);
+router.delete('/:productId', cartController.removeFromCart);
 
 // DELETE /api/cart - Clear entire cart
 router.delete('/', cartController.clearCart);
